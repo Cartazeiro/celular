@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6E141E">
+<title>Cartazeiro Celular</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icon-192.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<style>
+:root {
+  --vinho: #6E141E; --vinho-claro: #8A1D29; --creme: #FAECC8; --fundo: #FBF6EC;
+  --dourado: #A8875A; --texto: #2A2324; --suave: #6F6466; --borda: #E4D9C6;
+  --branco: #fff; --verde: #2E7D32; --erro: #B3261E;
+  --raio: 12px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--fundo); color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 16px; }
+body { min-height: 100dvh; overscroll-behavior-y: contain; }
+button { font: inherit; cursor: pointer; }
+input, select { font: inherit; color: var(--texto); }
+.oculto { display: none !important; }
+
+/* ---------- topo ---------- */
+.topo { position: sticky; top: 0; z-index: 5; background: var(--vinho); color: var(--creme);
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px; display: flex; align-items: center; gap: 10px; }
+.topo img { width: 36px; height: 36px; border-radius: 8px; }
+.topo h1 { font-size: 20px; margin: 0; flex: 1; letter-spacing: .2px; }
+.topo .sub { display: block; font-size: 12px; font-weight: 400; opacity: .8; }
+.btn-topo { background: rgba(250,236,200,.14); color: var(--creme); border: 0; border-radius: 10px;
+  padding: 8px 10px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
+.btn-topo svg { width: 20px; height: 20px; }
+.voltar { background: none; border: 0; color: var(--creme); padding: 6px; display: flex; }
+.voltar svg { width: 26px; height: 26px; }
+
+main { padding: 12px 12px 110px; max-width: 640px; margin: 0 auto; }
+
+/* ---------- lista ---------- */
+.resumo { display: flex; justify-content: space-between; align-items: center; color: var(--suave);
+  font-size: 14px; margin: 4px 2px 10px; }
+.cartao { background: var(--branco); border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 12px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
+.cartao .cab { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+.etq { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--creme); color: var(--vinho); }
+.etq.preta { background: var(--texto); color: #fff; }
+.cartao .nome { font-weight: 700; font-size: 15px; line-height: 1.25; }
+.cartao .comp { font-size: 12px; color: var(--suave); }
+.cartao .cod { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.cartao .preco { text-align: right; font-weight: 800; font-size: 18px; white-space: nowrap; }
+.cartao .preco s { display: block; font-size: 12px; font-weight: 500; color: var(--suave); }
+.cartao .preco small { display: block; font-size: 12px; font-weight: 600; color: var(--suave); }
+.cartao .acoes { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.acao { background: var(--fundo); border: 1px solid var(--borda); border-radius: 9px; padding: 6px 10px;
+  font-size: 13px; color: var(--texto); display: flex; align-items: center; gap: 5px; }
+.acao svg { width: 16px; height: 16px; }
+.vazio { text-align: center; color: var(--suave); padding: 50px 20px; line-height: 1.5; }
+.vazio img { width: 90px; opacity: .9; margin-bottom: 10px; }
+
+.fab { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 6;
+  background: var(--vinho); color: var(--creme); border: 0; border-radius: 18px; padding: 16px 22px;
+  font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 6px 18px rgba(110,20,30,.35); }
+.fab svg { width: 22px; height: 22px; }
+
+/* ---------- formulário ---------- */
+.campo { margin-bottom: 12px; }
+.campo > label, .rotulo { display: block; font-size: 13px; font-weight: 600; color: var(--suave); margin-bottom: 5px; }
+.entrada { width: 100%; background: var(--branco); border: 1px solid var(--borda); border-radius: 10px;
+  padding: 12px; font-size: 16px; min-height: 48px; }
+.entrada:focus { outline: 2px solid var(--vinho); outline-offset: -1px; border-color: var(--vinho); }
+.entrada:disabled { background: #F1ECE3; color: #B3A9A2; }
+.entrada.erro { border-color: var(--erro); background: #FFF3F1; }
+.entrada.grande { font-size: 22px; font-weight: 800; }
+.linha { display: flex; gap: 10px; }
+.linha > * { flex: 1; min-width: 0; }
+.com-botao { display: flex; gap: 8px; }
+.com-botao .entrada { flex: 1; }
+.btn-camera { flex: 0 0 52px; background: var(--vinho); color: var(--creme); border: 0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; }
+.btn-camera svg { width: 24px; height: 24px; }
+.dica { font-size: 12px; color: var(--suave); margin-top: 4px; }
+.dica.ok { color: var(--verde); font-weight: 600; }
+.dica.alerta { color: var(--erro); font-weight: 600; }
+.grupo { background: var(--branco); border: 1px solid var(--borda); border-radius: var(--raio); padding: 12px; margin-bottom: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--borda); background: var(--branco); border-radius: 20px; padding: 9px 14px;
+  font-size: 14px; font-weight: 600; color: var(--texto); }
+.chip[aria-pressed="true"] { background: var(--vinho); color: var(--creme); border-color: var(--vinho); }
+.chip:disabled { opacity: .4; }
+.liga { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; margin-bottom: 8px; }
+.liga input { width: 22px; height: 22px; accent-color: var(--vinho); }
+.total { font-size: 14px; color: var(--suave); margin-top: 6px; }
+.rodape-form { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--fundo);
+  border-top: 1px solid var(--borda); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+.rodape-form .por-dentro { max-width: 640px; margin: 0 auto; display: flex; gap: 10px; }
+.btn { border: 1px solid var(--borda); background: var(--branco); color: var(--texto); border-radius: 12px;
+  padding: 14px; font-size: 16px; font-weight: 700; flex: 1; }
+.btn.primario { background: var(--vinho); color: var(--creme); border-color: var(--vinho); flex: 2; }
+.msg { font-size: 14px; font-weight: 600; color: var(--erro); text-align: center; margin: 6px 0 0; min-height: 0; }
+
+/* ---------- produtos ---------- */
+.busca { margin-bottom: 10px; }
+.produto { background: var(--branco); border: 1px solid var(--borda); border-radius: 10px; padding: 10px 12px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.produto .txt { flex: 1; min-width: 0; }
+.produto .nome { font-weight: 700; font-size: 14px; }
+.produto .cod { font-size: 12px; color: var(--suave); }
+
+/* ---------- enviar ---------- */
+.passos { background: var(--branco); border: 1px solid var(--borda); border-radius: var(--raio); padding: 16px; line-height: 1.55; }
+.passos ol { margin: 0; padding-left: 20px; }
+.passos li { margin-bottom: 6px; }
+.grande-btn { width: 100%; margin-top: 16px; background: var(--vinho); color: var(--creme); border: 0;
+  border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 800; display: flex; align-items: center;
+  justify-content: center; gap: 10px; }
+.grande-btn svg { width: 26px; height: 26px; }
+.resultado { margin-top: 16px; padding: 14px; border-radius: 12px; font-weight: 600; line-height: 1.45; }
+.resultado.ok { background: #E8F5E9; color: var(--verde); }
+.resultado.falha { background: #FDECEA; color: var(--erro); }
+.resultado .btn { margin-top: 10px; width: 100%; }
+
+/* ---------- câmera ---------- */
+#camera { position: fixed; inset: 0; z-index: 20; background: #000; display: flex; flex-direction: column; }
+#camera video { flex: 1; width: 100%; object-fit: cover; }
+#camera .mira { position: absolute; left: 8%; right: 8%; top: 32%; height: 22%; border: 3px solid var(--creme);
+  border-radius: 14px; box-shadow: 0 0 0 9999px rgba(0,0,0,.45); }
+#camera.qr .mira { left: 15%; right: 15%; top: 22%; height: auto; aspect-ratio: 1; }
+#camera .texto { position: absolute; left: 0; right: 0; top: calc(14% + env(safe-area-inset-top)); text-align: center;
+  color: #fff; font-weight: 700; font-size: 17px; padding: 0 20px; text-shadow: 0 1px 4px #000; }
+#camera .botoes { position: absolute; left: 0; right: 0; bottom: calc(24px + env(safe-area-inset-bottom));
+  display: flex; justify-content: center; gap: 14px; }
+#camera .botoes button { background: rgba(255,255,255,.92); border: 0; border-radius: 30px; padding: 14px 22px;
+  font-weight: 700; font-size: 16px; color: var(--texto); }
+
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--texto); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 15px; z-index: 30;
+  max-width: 90vw; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.assinatura { text-align: center; font-size: 12px; color: var(--suave); margin-top: 18px; }
+</style>
+</head>
+<body>
+
+<!-- ================= LISTA ================= -->
+<section id="tela-lista">
+  <header class="topo">
+    <img src="icones/icon-192.png" alt="">
+    <h1>Cartazeiro <span class="sub">Preços que mudaram</span></h1>
+    <button class="btn-topo" id="ir-produtos" aria-label="Produtos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><polyline points="3.3 7 12 12 20.7 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+    </button>
+    <button class="btn-topo" id="ir-enviar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4"/></svg>
+      Enviar
+    </button>
+  </header>
+  <main>
+    <div class="resumo"><span id="resumo"></span><button class="acao oculto" id="limpar">Limpar lista</button></div>
+    <div id="lista"></div>
+    <div class="vazio oculto" id="vazio">
+      <img src="icones/icon-192.png" alt=""><br>
+      <b>Nenhuma etiqueta ainda.</b><br>
+      Toque em <b>Adicionar</b> e bipe o produto com a câmera.
+    </div>
+    <p class="assinatura">Cartazeiro · desenvolvido por Iago Moraes · Loja 38 — Garanhuns</p>
+  </main>
+  <button class="fab" id="novo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Adicionar
+  </button>
+</section>
+
+<!-- ================= FORMULÁRIO ================= -->
+<section id="tela-form" class="oculto">
+  <header class="topo">
+    <button class="voltar" data-voltar aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <h1 id="titulo-form">Nova etiqueta</h1>
+  </header>
+  <main>
+    <div class="campo">
+      <label for="f-ean">EAN (código de barras)</label>
+      <div class="com-botao">
+        <input class="entrada" id="f-ean" inputmode="numeric" maxlength="14" placeholder="Bipe com a câmera ou digite" autocomplete="off">
+        <button class="btn-camera" id="ler-ean" aria-label="Ler com a câmera">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>
+        </button>
+      </div>
+      <div class="dica" id="aviso-codigo"></div>
+    </div>
+    <div class="linha">
+      <div class="campo">
+        <label for="f-plu">PLU (código interno)</label>
+        <input class="entrada" id="f-plu" inputmode="numeric" maxlength="10" placeholder="Ex.: 22443" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="f-formato">Folha</label>
+        <select class="entrada" id="f-formato"></select>
+      </div>
+    </div>
+    <div class="campo">
+      <label for="f-desc">Descrição do produto</label>
+      <input class="entrada" id="f-desc" list="lista-desc" placeholder="Ex.: BISC MAIZENA 312G" autocomplete="off" autocapitalize="characters">
+      <datalist id="lista-desc"></datalist>
+    </div>
+
+    <div class="grupo" id="grupo-extras">
+      <label class="liga"><input type="checkbox" id="f-tem-cab"> Cabeçalho</label>
+      <div class="linha">
+        <input class="entrada" id="f-cab" list="lista-cab" placeholder="Ex.: LEVE 2 PAGUE 1" autocapitalize="characters" disabled style="flex:2">
+        <select class="entrada" id="f-estilo" disabled><option value="tarja">Tarja</option><option value="linha">Sublinhado</option></select>
+      </div>
+      <datalist id="lista-cab"></datalist>
+      <label class="liga" style="margin-top:12px"><input type="checkbox" id="f-tem-comp"> Complemento</label>
+      <input class="entrada" id="f-comp" placeholder="Ex.: TODOS OS SABORES" autocapitalize="characters" disabled>
+      <div class="dica">Use | para quebrar em duas linhas: CHOCOLATE | FRUTAS</div>
+      <div class="dica alerta oculto" id="aviso-a6">O A6 não tem cabeçalho nem complemento.</div>
+    </div>
+
+    <div class="campo">
+      <span class="rotulo">Tipo de cartaz</span>
+      <div class="chips">
+        <button class="chip" id="t-depor" aria-pressed="true">De / Por</button>
+        <button class="chip" id="t-rebaixa" aria-pressed="false">Validade</button>
+        <button class="chip" id="t-fardo" aria-pressed="false">Caixa / Fardo</button>
+      </div>
+    </div>
+
+    <div id="bloco-precos">
+      <div class="linha">
+        <div class="campo" id="campo-de">
+          <label for="f-de" id="rot-de">Preço DE</label>
+          <input class="entrada" id="f-de" inputmode="decimal" placeholder="5,58">
+        </div>
+        <div class="campo">
+          <label for="f-por" id="rot-por">Preço POR</label>
+          <input class="entrada grande" id="f-por" inputmode="decimal" placeholder="4,98">
+        </div>
+      </div>
+      <div class="campo" style="max-width:140px">
+        <label for="f-un">Unidade</label>
+        <input class="entrada" id="f-un" value="1 UN" autocapitalize="characters">
+      </div>
+    </div>
+
+    <div id="bloco-fardo" class="oculto">
+      <div class="linha">
+        <div class="campo"><label for="f-qtd-fardo">Qtd. na caixa</label><input class="entrada" id="f-qtd-fardo" inputmode="numeric" value="12"></div>
+        <div class="campo"><label for="f-un-fardo">Unidade</label><input class="entrada" id="f-un-fardo" value="UN" autocapitalize="characters"></div>
+      </div>
+      <div class="campo"><label for="f-unit">Preço da unidade</label><input class="entrada grande" id="f-unit" inputmode="decimal" placeholder="3,49"></div>
+      <label class="liga"><input type="checkbox" id="f-total-manual"> Digitar o preço da caixa à mão</label>
+      <input class="entrada oculto" id="f-total" inputmode="decimal" placeholder="41,88">
+      <div class="total" id="total-fardo"></div>
+    </div>
+
+    <div class="campo oculto" id="bloco-validade">
+      <label for="f-val">Data de validade</label>
+      <input class="entrada" id="f-val" type="date">
+    </div>
+
+    <div class="campo" style="max-width:140px">
+      <label for="f-qtd">Cópias</label>
+      <input class="entrada" id="f-qtd" inputmode="numeric" value="1">
+    </div>
+  </main>
+  <div class="rodape-form">
+    <div class="por-dentro">
+      <button class="btn" data-voltar>Cancelar</button>
+      <button class="btn primario" id="salvar">Adicionar à lista</button>
+    </div>
+    <p class="msg" id="msg-form"></p>
+  </div>
+</section>
+
+<!-- ================= PRODUTOS ================= -->
+<section id="tela-produtos" class="oculto">
+  <header class="topo">
+    <button class="voltar" data-voltar aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <h1>Produtos cadastrados</h1>
+  </header>
+  <main>
+    <p class="dica" style="margin-top:0">Todo produto com EAN ou PLU que você coloca na lista fica guardado aqui. Ao enviar para o PC, os dois cadastros se juntam.</p>
+    <input class="entrada busca" id="busca" placeholder="Procurar por EAN, PLU ou nome" autocomplete="off">
+    <div id="produtos"></div>
+  </main>
+</section>
+
+<!-- ================= ENVIAR ================= -->
+<section id="tela-enviar" class="oculto">
+  <header class="topo">
+    <button class="voltar" data-voltar aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <h1>Enviar para o PC</h1>
+  </header>
+  <main>
+    <div class="passos">
+      <ol>
+        <li>No Cartazeiro do PC, clique em <b>Celular › Receber do celular</b>.</li>
+        <li>Vai aparecer um QR Code na tela do PC.</li>
+        <li>Toque no botão abaixo e aponte a câmera para o QR.</li>
+      </ol>
+      <p class="dica" id="info-envio" style="margin-bottom:0"></p>
+    </div>
+    <button class="grande-btn" id="ler-qr">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4"/></svg>
+      Ler QR do PC
+    </button>
+    <div id="resultado-envio"></div>
+  </main>
+</section>
+
+<!-- ================= CÂMERA ================= -->
+<div id="camera" class="oculto">
+  <video id="video" playsinline muted></video>
+  <div class="mira"></div>
+  <div class="texto" id="camera-texto">Aponte para o código de barras</div>
+  <div class="botoes">
+    <button id="lanterna" class="oculto">Lanterna</button>
+    <button id="fechar-camera">Cancelar</button>
+  </div>
+</div>
+
+<div class="toast oculto" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
