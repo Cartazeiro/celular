@@ -1,6 +1,6 @@
 // Guarda o app no celular para abrir mesmo sem internet.
 // Ao mudar qualquer arquivo do app, aumente a VERSAO para os celulares atualizarem.
-const VERSAO = "cartazeiro-celular-v4";
+const VERSAO = "cartazeiro-celular-v5";
 const ARQUIVOS = [
   "./",
   "./index.html",
@@ -31,7 +31,9 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin) return; // a ponte (Cloudflare) sempre vai direto pela internet
   // Rede primeiro (pega atualização), cache se estiver sem internet
   e.respondWith(
-    fetch(req)
+    // "no-cache": sempre confere no GitHub se tem arquivo novo (sem isso o
+    // navegador podia ficar até 10 minutos com a versão velha)
+    fetch(req, { cache: "no-cache" })
       .then((r) => {
         const copia = r.clone();
         caches.open(VERSAO).then((c) => c.put(req, copia));
