@@ -161,6 +161,7 @@ function desenharLista() {
     c.className = "cartao";
     const etiquetas = [`<span class="etq">${escapar(APELIDO[it.formato] || "A6")}</span>`];
     if (it.cabecalho) etiquetas.push(`<span class="etq preta">${escapar(it.cabecalho)}</span>`);
+    if (it.promo_validade && it.promo_ate) etiquetas.push(`<span class="etq">Promo até ${escapar(it.promo_ate.slice(0, 5))}</span>`);
     if (it.e_rebaixa) etiquetas.push(`<span class="etq">Validade ${escapar(it.val)}</span>`);
     if (it.e_fardo) etiquetas.push(`<span class="etq">Caixa ${escapar(it.qtd_fardo)} ${escapar(it.un)}</span>`);
     if ((parseInt(it.quantidade) || 1) > 1) etiquetas.push(`<span class="etq">${it.quantidade} cópias</span>`);
@@ -218,6 +219,10 @@ for (const id of ["f-desc", "f-cab", "f-comp", "f-un", "f-un-fardo"]) {
   });
 }
 
+const paraInput = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const inputParaBr = (v) => { if (!v) return ""; const [a, m, d] = v.split("-"); return `${d}/${m}/${a}`; };
+const brParaInput = (v) => { if (!v) return ""; const [d, m, a] = v.split("/"); return `${a}-${m}-${d}`; };
+
 function preencherDatalist() {
   const dl = $("lista-desc");
   dl.innerHTML = "";
@@ -254,6 +259,17 @@ function atualizarForm() {
   $("f-estilo").disabled = $("f-cab").disabled;
   $("f-comp").disabled = semExtras || !$("f-tem-comp").checked;
 
+  // validade da promoção: não combina com rebaixa nem com caixa/fardo
+  const podePromo = !fardo && !rebaixa;
+  $("f-tem-promo").disabled = !podePromo;
+  $("aviso-promo").classList.toggle("oculto", podePromo);
+  const ligaPromo = podePromo && $("f-tem-promo").checked;
+  ["f-promo-de", "f-promo-ate", "f-estoque"].forEach((id) => ($(id).disabled = !ligaPromo));
+  if (ligaPromo && !$("f-promo-de").value) {
+    const hoje = new Date(), daqui2 = new Date(Date.now() + 2 * 864e5);
+    $("f-promo-de").value = paraInput(hoje); $("f-promo-ate").value = paraInput(daqui2);
+  }
+
   $("f-total").classList.toggle("oculto", !$("f-total-manual").checked);
   $("total-fardo").classList.toggle("oculto", $("f-total-manual").checked);
   const unit = precoNum($("f-unit").value), qtd = parseInt($("f-qtd-fardo").value) || 1;
@@ -264,6 +280,7 @@ function atualizarForm() {
 ["depor", "rebaixa", "fardo"].forEach((n) =>
   $("t-" + n).addEventListener("click", () => { marcarChip(n, !tipo[n]); atualizarForm(); }));
 selFormato.addEventListener("change", () => { config.formato = selFormato.value; salvarConfig(); atualizarForm(); });
+["f-tem-promo"].forEach((id) => $(id).addEventListener("change", atualizarForm));
 ["f-tem-cab", "f-tem-comp", "f-total-manual"].forEach((id) => $(id).addEventListener("change", (e) => {
   atualizarForm();
   if (e.target.checked && id === "f-tem-cab") $("f-cab").focus();
@@ -305,6 +322,9 @@ function abrirForm(id) {
       if (it.val) { const [d, m, a] = it.val.split("/"); $("f-val").value = `${a}-${m}-${d}`; }
     }
     $("f-qtd").value = it.quantidade || 1;
+    $("f-tem-promo").checked = !!it.promo_validade;
+    $("f-promo-de").value = brParaInput(it.promo_de); $("f-promo-ate").value = brParaInput(it.promo_ate);
+    $("f-estoque").checked = it.promo_estoque !== false;
     $("titulo-form").textContent = "Editar etiqueta";
     $("salvar").textContent = "Salvar alterações";
   } else {
@@ -375,6 +395,13 @@ function lerForm() {
     estilo_cabecalho: $("f-estilo").value || "tarja",
     quantidade: Math.max(1, parseInt($("f-qtd").value) || 1), sel: true,
   };
+  const ligaPromo = !$("f-tem-promo").disabled && $("f-tem-promo").checked;
+  Object.assign(item, {
+    promo_validade: ligaPromo,
+    promo_de: ligaPromo ? inputParaBr($("f-promo-de").value) : "",
+    promo_ate: ligaPromo ? inputParaBr($("f-promo-ate").value) : "",
+    promo_estoque: $("f-estoque").checked,
+  });
   if (tipo.fardo && FORMATOS_FARDO.includes(formato)) {
     const unit = normalizarPreco($("f-unit").value);
     if (!unit || precoNum(unit) <= 0) return erro("f-unit", "Informe o preço da unidade (ex.: 3,49).");
