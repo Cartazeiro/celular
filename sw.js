@@ -1,6 +1,6 @@
 // Guarda o app no celular para abrir mesmo sem internet.
 // Ao mudar qualquer arquivo do app, aumente a VERSAO para os celulares atualizarem.
-const VERSAO = "cartazeiro-celular-v2";
+const VERSAO = "cartazeiro-celular-v3";
 const ARQUIVOS = [
   "./",
   "./index.html",

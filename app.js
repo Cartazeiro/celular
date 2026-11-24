@@ -259,8 +259,8 @@ function atualizarForm() {
   $("f-estilo").disabled = $("f-cab").disabled;
   $("f-comp").disabled = semExtras || !$("f-tem-comp").checked;
 
-  // validade da promoção: não combina com rebaixa nem com caixa/fardo
-  const podePromo = !fardo && !rebaixa;
+  // validade da promoção: não combina com rebaixa (que já tem a validade do produto)
+  const podePromo = !rebaixa;
   $("f-tem-promo").disabled = !podePromo;
   $("aviso-promo").classList.toggle("oculto", podePromo);
   const ligaPromo = podePromo && $("f-tem-promo").checked;
