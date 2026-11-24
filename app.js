@@ -173,7 +173,7 @@ function desenharLista() {
     c.innerHTML = `
       <div class="cab">${etiquetas.join("")}</div>
       <div>
-        <div class="nome">${escapar(it.desc)}</div>
+        <div class="nome">${escapar(it.desc_cartaz || it.desc)}</div>
         ${it.complemento ? `<div class="comp">${escapar(it.complemento)}</div>` : ""}
         <div class="cod">${escapar(codigos || "sem código")}</div>
       </div>
@@ -289,6 +289,37 @@ selFormato.addEventListener("change", () => { config.formato = selFormato.value;
 ["f-unit", "f-qtd-fardo"].forEach((id) => $(id).addEventListener("input", atualizarForm));
 $("f-estilo").addEventListener("change", () => { config.estilo = $("f-estilo").value; salvarConfig(); });
 
+// --- palavras da descrição: tocou, a palavra sai do cartaz (sabor, tamanho...) ---
+// O cadastro continua com o nome completo; só o cartaz sai com o nome curto.
+let palavrasFora = new Set();
+const palavrasDe = (t) => { const m = maiusculo(t); return m ? m.split(" ") : []; };
+
+function textoCartaz() {
+  const palavras = palavrasDe($("f-desc").value);
+  if (palavras.length < 2 || !palavras.some((p) => palavrasFora.has(p))) return "";
+  return palavras.filter((p) => !palavrasFora.has(p)).join(" ");
+}
+
+function desenharPalavras() {
+  const palavras = palavrasDe($("f-desc").value);
+  palavrasFora = new Set([...palavrasFora].filter((p) => palavras.includes(p)));
+  $("bloco-palavras").classList.toggle("oculto", palavras.length < 2);
+  $("palavras").innerHTML = palavras.map((p) =>
+    `<button type="button" class="palavra" data-palavra="${escapar(p)}" aria-pressed="${palavrasFora.has(p)}">${escapar(p)}</button>`).join("");
+  const cartaz = textoCartaz();
+  $("previa-palavras").innerHTML = cartaz ? `Vai sair no cartaz: <b>${escapar(cartaz)}</b>` : "";
+  $("previa-palavras").classList.toggle("oculto", !cartaz);
+}
+
+$("palavras").addEventListener("click", (e) => {
+  const b = e.target.closest(".palavra");
+  if (!b) return;
+  const p = b.dataset.palavra;
+  if (palavrasFora.has(p)) palavrasFora.delete(p); else palavrasFora.add(p);
+  desenharPalavras();
+});
+$("f-desc").addEventListener("input", desenharPalavras);
+
 function limparForm() {
   for (const id of ["f-ean", "f-plu", "f-desc", "f-cab", "f-comp", "f-de", "f-por", "f-unit", "f-total", "f-val"]) $(id).value = "";
   $("f-un").value = "1 UN"; $("f-un-fardo").value = "UN"; $("f-qtd-fardo").value = "12"; $("f-qtd").value = "1";
@@ -297,6 +328,8 @@ function limparForm() {
   document.querySelectorAll(".entrada.erro").forEach((el) => el.classList.remove("erro"));
   $("aviso-codigo").textContent = ""; $("aviso-codigo").className = "dica";
   $("msg-form").textContent = "";
+  palavrasFora = new Set();
+  desenharPalavras();
 }
 
 function abrirForm(id) {
@@ -307,6 +340,11 @@ function abrirForm(id) {
   if (it) {
     selFormato.value = it.formato || config.formato;
     $("f-ean").value = it.ean || ""; $("f-plu").value = it.plu || ""; $("f-desc").value = it.desc || "";
+    if (it.desc_cartaz) {
+      const ficam = palavrasDe(it.desc_cartaz);
+      palavrasFora = new Set(palavrasDe(it.desc).filter((p) => !ficam.includes(p)));
+    }
+    desenharPalavras();
     $("f-tem-cab").checked = !!it.cabecalho; $("f-cab").value = it.cabecalho || "";
     $("f-estilo").value = it.estilo_cabecalho || "tarja";
     $("f-tem-comp").checked = !!it.complemento; $("f-comp").value = it.complemento || "";
@@ -345,6 +383,7 @@ function buscarCodigo(qual) {
     if (p.ean && !$("f-ean").value) $("f-ean").value = p.ean;
     if (p.plu && !$("f-plu").value) $("f-plu").value = p.plu;
     $("f-desc").value = p.desc;
+    desenharPalavras();
     aviso.textContent = "✓ Produto do cadastro: " + p.desc;
     aviso.className = "dica ok";
   } else if (qual === "ean" && (valor.length === 13 || valor.length === 8) && !eanValido(valor)) {
@@ -386,10 +425,11 @@ function lerForm() {
   document.querySelectorAll(".entrada.erro").forEach((el) => el.classList.remove("erro"));
   const desc = maiusculo($("f-desc").value);
   if (!desc) return erro("f-desc", "Preencha a descrição do produto.");
+  if (palavrasDe(desc).every((p) => palavrasFora.has(p))) return erro("f-desc", "Deixe pelo menos uma palavra no cartaz.");
   const formato = selFormato.value;
   const semExtras = FORMATOS_SEM_EXTRAS.includes(formato);
   const item = {
-    desc, ean: soDigitos($("f-ean").value), plu: soDigitos($("f-plu").value), formato,
+    desc, desc_cartaz: textoCartaz(), ean: soDigitos($("f-ean").value), plu: soDigitos($("f-plu").value), formato,
     cabecalho: !semExtras && $("f-tem-cab").checked ? maiusculo($("f-cab").value) : "",
     complemento: !semExtras && $("f-tem-comp").checked ? maiusculo($("f-comp").value) : "",
     estilo_cabecalho: $("f-estilo").value || "tarja",

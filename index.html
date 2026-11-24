@@ -89,6 +89,13 @@ main { padding: 12px 12px 110px; max-width: 640px; margin: 0 auto; }
   font-size: 14px; font-weight: 600; color: var(--texto); }
 .chip[aria-pressed="true"] { background: var(--vinho); color: var(--creme); border-color: var(--vinho); }
 .chip:disabled { opacity: .4; }
+.palavras { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.palavra { border: 1px solid var(--borda); background: var(--branco); border-radius: 16px; padding: 7px 12px;
+  font-size: 13px; font-weight: 700; color: var(--texto); }
+.palavra[aria-pressed="true"] { background: transparent; color: #B4A9A2; border-style: dashed; border-color: #D3C6B4;
+  text-decoration: line-through; }
+.dica.previa { color: var(--vinho); }
+.dica.previa b { font-weight: 800; }
 .liga { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; margin-bottom: 8px; }
 .liga input { width: 22px; height: 22px; accent-color: var(--vinho); }
 .total { font-size: 14px; color: var(--suave); margin-top: 6px; }
@@ -202,6 +209,11 @@ main { padding: 12px 12px 110px; max-width: 640px; margin: 0 auto; }
       <label for="f-desc">Descrição do produto</label>
       <input class="entrada" id="f-desc" list="lista-desc" placeholder="Ex.: BISC MAIZENA 312G" autocomplete="off" autocapitalize="characters">
       <datalist id="lista-desc"></datalist>
+      <div id="bloco-palavras" class="oculto">
+        <div class="dica">Toque numa palavra para tirar do cartaz (sabor, tamanho, fragrância...)</div>
+        <div class="palavras" id="palavras"></div>
+        <div class="dica previa oculto" id="previa-palavras"></div>
+      </div>
     </div>
 
     <div class="grupo" id="grupo-extras">
